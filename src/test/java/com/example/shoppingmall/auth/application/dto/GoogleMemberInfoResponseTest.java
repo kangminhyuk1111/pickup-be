@@ -25,7 +25,7 @@ class GoogleMemberInfoResponseTest {
     final GoogleMemberInfoResponse info = createGoogleMemberInfoResponse(
         null, "testuser", "https://picture.url");
 
-    assertThatThrownBy(() -> info.toOAuthMemberInfoResponse())
+    assertThatThrownBy(info::toOAuthMemberInfoResponse)
         .isInstanceOf(NullPointerException.class)
         .hasMessage("id 는 null이 될 수 없습니다.");
   }
@@ -35,7 +35,7 @@ class GoogleMemberInfoResponseTest {
     final GoogleMemberInfoResponse info = createGoogleMemberInfoResponse(
         "123", null, "https://picture.url");
 
-    assertThatThrownBy(() -> info.toOAuthMemberInfoResponse())
+    assertThatThrownBy(info::toOAuthMemberInfoResponse)
         .isInstanceOf(NullPointerException.class)
         .hasMessage("name 은 null이 될 수 없습니다.");
   }
@@ -45,7 +45,7 @@ class GoogleMemberInfoResponseTest {
     final GoogleMemberInfoResponse info = createGoogleMemberInfoResponse(
         "123", "testuser", null);
 
-    assertThatThrownBy(() -> info.toOAuthMemberInfoResponse())
+    assertThatThrownBy(info::toOAuthMemberInfoResponse)
         .isInstanceOf(NullPointerException.class)
         .hasMessage("picture 은 null이 될 수 없습니다.");
   }
@@ -55,7 +55,7 @@ class GoogleMemberInfoResponseTest {
     final GoogleMemberInfoResponse info = createGoogleMemberInfoResponse(
         null, null, null);
 
-    assertThatThrownBy(() -> info.toOAuthMemberInfoResponse())
+    assertThatThrownBy(info::toOAuthMemberInfoResponse)
         .isInstanceOf(NullPointerException.class)
         .hasMessage("id 는 null이 될 수 없습니다.");
   }
@@ -139,7 +139,7 @@ class GoogleMemberInfoResponseTest {
         "123", "user", "url");
 
     // 예외가 발생하지 않음을 확인
-    assertThatCode(() -> validInfo.toOAuthMemberInfoResponse())
+    assertThatCode(validInfo::toOAuthMemberInfoResponse)
         .doesNotThrowAnyException();
   }
 

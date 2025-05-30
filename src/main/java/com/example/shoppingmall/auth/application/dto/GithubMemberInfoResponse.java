@@ -33,7 +33,6 @@ public class GithubMemberInfoResponse {
   private void validateFields() {
     Objects.requireNonNull(id, "id 는 null이 될 수 없습니다.");
     Objects.requireNonNull(name, "name 은 null이 될 수 없습니다.");
-    // avatarUrl은 null일 수 있으므로 검증에서 제외
   }
 
   private String getDefaultProfileUrl() {

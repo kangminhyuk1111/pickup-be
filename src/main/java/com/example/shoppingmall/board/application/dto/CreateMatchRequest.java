@@ -4,6 +4,7 @@ import com.example.shoppingmall.auth.domain.member.Member;
 import com.example.shoppingmall.board.domain.match.Match;
 import com.example.shoppingmall.board.domain.type.MatchCategory;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,12 +36,23 @@ public class CreateMatchRequest {
   @Builder
   public CreateMatchRequest(MatchCategory category, String title, String content,
       String location, LocalDateTime matchDate, Integer maxPlayers) {
+    validateTitle(title);
+    Objects.requireNonNull(category, "카테고리는 null이 올 수 없습니다.");
+    Objects.requireNonNull(title, "제목은 null이 올 수 없습니다.");
+    Objects.requireNonNull(content, "컨텐츠는 null이 올 수 없습니다.");
+    Objects.requireNonNull(location, "장소는 null이 올 수 없습니다.");
     this.category = category;
     this.title = title;
     this.content = content;
     this.location = location;
     this.matchDate = matchDate;
     this.maxPlayers = maxPlayers;
+  }
+
+  private void validateTitle(final String title) {
+    if (title.trim().isEmpty()) {
+      throw new RuntimeException("제목은 빈 값이 될 수 없습니다.");
+    }
   }
 
   public CreateMatchRequest(MatchCategory category, String title, String content) {

@@ -1,5 +1,6 @@
 package com.example.shoppingmall.auth.ui;
 
+import com.example.shoppingmall.auth.application.dto.SigninResponse;
 import com.example.shoppingmall.auth.application.service.OAuthService;
 import com.example.shoppingmall.auth.util.AuthUrlCreator;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,17 +49,20 @@ public class OAuthController {
     }
 
     @GetMapping("/oauth/callback/github")
-    public ResponseEntity<?> gitHubCallback(@RequestParam String code) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(oAuthService.signin(code, "github"));
+    public String gitHubCallback(@RequestParam String code) {
+        final SigninResponse githubResponse = oAuthService.signin(code, "github");
+        return "redirect:http://localhost:3000/auth/callback/github?token=" + githubResponse.getToken();
     }
 
     @GetMapping("/oauth/callback/google")
-    public ResponseEntity<?> googleCallback(@RequestParam String code) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(oAuthService.signin(code, "google"));
+    public String googleCallback(@RequestParam String code) {
+        final SigninResponse googleResponse = oAuthService.signin(code, "google");
+        return "redirect:http://localhost:3000/auth/callback/google?token=" + googleResponse.getToken();
     }
 
     @GetMapping("/oauth/callback/kakao")
-    public ResponseEntity<?> kakaoCallback(@RequestParam String code) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(oAuthService.signin(code, "kakao"));
+    public String kakaoCallback(@RequestParam String code) {
+        final SigninResponse kakaoResponse = oAuthService.signin(code, "kakao");
+        return "redirect:http://localhost:3000/auth/callback/kakao?token=" + kakaoResponse.getToken();
     }
 }

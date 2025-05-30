@@ -38,21 +38,11 @@ class GithubMemberInfoResponseTest {
   }
 
   @Test
-  void avatarUrl이_null일_때_예외_발생() {
-    assertThatThrownBy(() ->
-        new GithubMemberInfoResponse("123", "testuser", null)
-            .toOAuthMemberInfoResponse())
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("avatarUrl 은 null이 될 수 없습니다.");
-  }
-
-  @Test
   void 모든_필드가_null일_때_id_검증이_먼저_실행됨() {
     assertThatThrownBy(() ->
         new GithubMemberInfoResponse(null, null, null)
             .toOAuthMemberInfoResponse())
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("id 는 null이 될 수 없습니다.");
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test

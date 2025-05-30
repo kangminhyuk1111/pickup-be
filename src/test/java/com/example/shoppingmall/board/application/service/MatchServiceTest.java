@@ -37,14 +37,10 @@ class MatchServiceTest {
   @Mock
   private MemberRepository memberRepository;
 
-  @Mock
-  private TokenProvider tokenProvider;
-
   @InjectMocks
   private MatchService matchService;
 
   private Member member;
-  private String token;
   private Long userId;
   private Long matchId;
 
@@ -52,7 +48,6 @@ class MatchServiceTest {
   void setUp() {
     userId = 1L;
     matchId = 1L;
-    token = "valid-jwt-token";
 
     member = Member.builder()
         .id(userId)
@@ -64,8 +59,8 @@ class MatchServiceTest {
   class CreateMatchTest {
 
     @Test
-    @DisplayName("매치 생성 성공 - 토큰 방식")
-    void createMatch_withToken_success() {
+    @DisplayName("매치 생성 성공")
+    void createMatch_success() {
       // given
       CreateMatchRequest createRequest = new CreateMatchRequest(
           MatchCategory.MATCHING,
@@ -78,7 +73,6 @@ class MatchServiceTest {
 
       Match mockMatch = mock(Match.class);
 
-      when(tokenProvider.getUserId(token)).thenReturn(userId);
       when(memberRepository.findById(userId)).thenReturn(Optional.of(member));
       when(matchRepository.save(any(Match.class))).thenReturn(mockMatch);
 
@@ -87,7 +81,6 @@ class MatchServiceTest {
 
       // then
       assertThat(result).isNotNull();
-      verify(tokenProvider).getUserId(token);
       verify(memberRepository).findById(userId);
       verify(matchRepository).save(any(Match.class));
     }
@@ -105,7 +98,6 @@ class MatchServiceTest {
           8
       );
 
-      when(tokenProvider.getUserId(token)).thenReturn(userId);
       when(memberRepository.findById(userId)).thenReturn(Optional.empty());
 
       // when & then
@@ -113,7 +105,6 @@ class MatchServiceTest {
           .isInstanceOf(RuntimeException.class)
           .hasMessage("유저가 존재하지 않습니다.");
 
-      verify(tokenProvider).getUserId(token);
       verify(memberRepository).findById(userId);
       verify(matchRepository, never()).save(any(Match.class));
     }
@@ -124,13 +115,12 @@ class MatchServiceTest {
   class DeleteMatchTest {
 
     @Test
-    @DisplayName("매치 삭제 성공 - 토큰 방식")
-    void deleteMatch_withToken_success() {
+    @DisplayName("매치 삭제 성공")
+    void deleteMatch_success() {
       // given
       DeleteMatchRequest deleteRequest = new DeleteMatchRequest(matchId);
       Match mockMatch = mock(Match.class);
 
-      when(tokenProvider.getUserId(token)).thenReturn(userId);
       when(matchRepository.findById(matchId)).thenReturn(Optional.of(mockMatch));
       when(mockMatch.isOwnedBy(userId)).thenReturn(true);
 
@@ -138,7 +128,6 @@ class MatchServiceTest {
       matchService.deleteMatch(userId, deleteRequest);
 
       // then
-      verify(tokenProvider).getUserId(token);
       verify(matchRepository).findById(matchId);
       verify(mockMatch).isOwnedBy(userId);
       verify(matchRepository).delete(mockMatch);
@@ -150,7 +139,6 @@ class MatchServiceTest {
       // given
       DeleteMatchRequest deleteRequest = new DeleteMatchRequest(matchId);
 
-      when(tokenProvider.getUserId(token)).thenReturn(userId);
       when(matchRepository.findById(matchId)).thenReturn(Optional.empty());
 
       // when & then
@@ -158,29 +146,26 @@ class MatchServiceTest {
           .isInstanceOf(RuntimeException.class)
           .hasMessage("매치를 찾을 수 없습니다.");
 
-      verify(tokenProvider).getUserId(token);
       verify(matchRepository).findById(matchId);
       verify(matchRepository, never()).delete(any(Match.class));
     }
 
     @Test
-    @DisplayName("매치 삭제 실패 - 권한 없음 (작성자가 아님)")
+    @DisplayName("매치 삭제 실패 - 권한 없음")
     void deleteMatch_unauthorizedUser() {
       // given
       DeleteMatchRequest deleteRequest = new DeleteMatchRequest(matchId);
       Long otherUserId = 999L;
       Match mockMatch = mock(Match.class);
 
-      when(tokenProvider.getUserId(token)).thenReturn(otherUserId);
       when(matchRepository.findById(matchId)).thenReturn(Optional.of(mockMatch));
       when(mockMatch.isOwnedBy(otherUserId)).thenReturn(false);
 
       // when & then
-      assertThatThrownBy(() -> matchService.deleteMatch(userId, deleteRequest))
+      assertThatThrownBy(() -> matchService.deleteMatch(otherUserId, deleteRequest))
           .isInstanceOf(RuntimeException.class)
-          .hasMessage("작성자가 아니기 때문에 삭제할 수 없습니다.");
+          .hasMessage("작성자가 아니기 때문에 관리할 수 없습니다.");
 
-      verify(tokenProvider).getUserId(token);
       verify(matchRepository).findById(matchId);
       verify(mockMatch).isOwnedBy(otherUserId);
       verify(matchRepository, never()).delete(any(Match.class));
@@ -195,7 +180,7 @@ class MatchServiceTest {
     @DisplayName("모든 매치 조회 성공")
     void findAllMatches_success() {
       // given
-      Match mockMatch = mock(Match.class);
+      Match mockMatch = createMockMatchWithMember();
       List<Match> matches = Arrays.asList(mockMatch);
 
       when(matchRepository.findAll()).thenReturn(matches);
@@ -214,7 +199,7 @@ class MatchServiceTest {
     void findMatchById_success() {
       // given
       FindMatchByMatchIdRequest findRequest = new FindMatchByMatchIdRequest(matchId);
-      Match mockMatch = mock(Match.class);
+      Match mockMatch = createMockMatchWithMember();
 
       when(matchRepository.findById(matchId)).thenReturn(Optional.of(mockMatch));
 
@@ -240,6 +225,27 @@ class MatchServiceTest {
           .hasMessage("게시물이 존재하지 않습니다.");
 
       verify(matchRepository).findById(matchId);
+    }
+
+    // Mock 객체에서 Member 관계를 제대로 설정하는 헬퍼 메서드
+    private Match createMockMatchWithMember() {
+      Match mockMatch = mock(Match.class);
+      Member mockMember = mock(Member.class);
+
+      // Member mock 설정
+      when(mockMember.getId()).thenReturn(userId);
+
+      // Match mock에서 Member 반환하도록 설정
+      when(mockMatch.getMember()).thenReturn(mockMember);
+      when(mockMatch.getId()).thenReturn(matchId);
+      when(mockMatch.getTitle()).thenReturn("테스트 매치");
+      when(mockMatch.getContent()).thenReturn("테스트 내용");
+      when(mockMatch.getLocation()).thenReturn("테스트 위치");
+      when(mockMatch.getMatchDate()).thenReturn(LocalDateTime.now());
+      when(mockMatch.getMaxPlayers()).thenReturn(8);
+      when(mockMatch.getCategory()).thenReturn(MatchCategory.MATCHING);
+
+      return mockMatch;
     }
   }
 }

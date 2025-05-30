@@ -1,6 +1,7 @@
 package com.example.shoppingmall.board.domain.match;
 
 import com.example.shoppingmall.auth.domain.member.Member;
+import com.example.shoppingmall.board.application.dto.UpdateMatchRequest;
 import com.example.shoppingmall.board.domain.type.MatchCategory;
 import com.example.shoppingmall.board.domain.type.MatchStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,8 +48,9 @@ class MatchTest {
   void 일반_게시글_생성_성공() {
     final String title = "자유 게시글";
     final String content = "일반 게시글 내용";
+    final String openChatUrl = "http://localhost:8080/";
 
-    final Match match = Match.createGeneralPost(member, MatchCategory.FREE, title, content);
+    final Match match = Match.createGeneralPost(member, MatchCategory.FREE, title, content, openChatUrl);
 
     assertThat(match.getMember()).isEqualTo(member);
     assertThat(match.getCategory()).isEqualTo(MatchCategory.FREE);
@@ -89,7 +91,7 @@ class MatchTest {
 
   @Test
   void 매칭_게시글_여부_확인_false() {
-    final Match match = Match.createGeneralPost(member, MatchCategory.FREE, "제목", "내용");
+    final Match match = Match.createGeneralPost(member, MatchCategory.FREE, "제목", "내용",  "http://localhost:8080/");
 
     assertThat(match.isMatchingPost()).isFalse();
   }
@@ -113,7 +115,7 @@ class MatchTest {
 
   @Test
   void 일반_게시글_매칭_완료_상태_변경_안됨() {
-    final Match match = Match.createGeneralPost(member, MatchCategory.FREE, "제목", "내용");
+    final Match match = Match.createGeneralPost(member, MatchCategory.FREE, "제목", "내용",  "http://localhost:8080/");
 
     match.completeMatching();
 
@@ -131,7 +133,7 @@ class MatchTest {
 
   @Test
   void 일반_게시글_매칭_종료_상태_변경_안됨() {
-    final Match match = Match.createGeneralPost(member, MatchCategory.FREE, "제목", "내용");
+    final Match match = Match.createGeneralPost(member, MatchCategory.FREE, "제목", "내용", "http://localhost:8080/");
 
     match.finishMatch();
 
@@ -140,7 +142,7 @@ class MatchTest {
 
   @Test
   void 일반_게시글_수정_성공() {
-    final Match match = Match.createGeneralPost(member, MatchCategory.FREE, "원래 제목", "원래 내용");
+    final Match match = Match.createGeneralPost(member, MatchCategory.FREE, "원래 제목", "원래 내용", "http://localhost:8080/");
     final String newTitle = "수정된 제목";
     final String newContent = "수정된 내용";
 
@@ -158,8 +160,11 @@ class MatchTest {
     final String newLocation = "수정된 장소";
     final LocalDateTime newMatchDate = matchDate.plusDays(1);
     final Integer newMaxPlayers = 12;
+    final String newOpenChatUrl = "http://localhost:8080/";
 
-    match.updateMatchingPost(newTitle, newContent, newLocation, newMatchDate, newMaxPlayers);
+    final UpdateMatchRequest updateRequest = new UpdateMatchRequest(MatchCategory.MATCHING, newTitle, newContent, newLocation, newMatchDate, newMaxPlayers, newOpenChatUrl);
+
+    match.updateMatchingPost(updateRequest);
 
     assertThat(match.getTitle()).isEqualTo(newTitle);
     assertThat(match.getContent()).isEqualTo(newContent);

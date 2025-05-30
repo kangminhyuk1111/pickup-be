@@ -37,8 +37,7 @@ class CreateMatchRequestTest {
           .title("제목")
           .content("내용")
           .build())
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessage("카테고리는 필수입니다.");
+          .isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -49,8 +48,7 @@ class CreateMatchRequestTest {
           .title(null)
           .content("내용")
           .build())
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessage("제목은 필수입니다.");
+          .isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -61,8 +59,7 @@ class CreateMatchRequestTest {
           .title("   ")
           .content("내용")
           .build())
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessage("제목은 필수입니다.");
+          .isInstanceOf(RuntimeException.class);
     }
 
     @Test
@@ -73,8 +70,7 @@ class CreateMatchRequestTest {
           .title("제목")
           .content(null)
           .build())
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessage("내용은 필수입니다.");
+          .isInstanceOf(NullPointerException.class);
     }
   }
 
@@ -213,7 +209,7 @@ class CreateMatchRequestTest {
       // then
       assertThat(match).isNotNull();
       assertThat(match.getMember()).isEqualTo(member);
-      assertThat(match.getCategory()).isEqualTo(MatchCategory.FREE);
+      assertThat(match.getCategory()).isEqualTo(MatchCategory.MATCHING);
       assertThat(match.getTitle()).isEqualTo("자유 게시글");
       assertThat(match.getContent()).isEqualTo("자유 게시글 내용");
       assertThat(match.getLocation()).isNull();

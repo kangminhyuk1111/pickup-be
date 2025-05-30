@@ -2,6 +2,7 @@ package com.example.shoppingmall.board.domain.match;
 
 import com.example.shoppingmall.auth.domain.member.Member;
 import com.example.shoppingmall.board.application.dto.CreateMatchRequest;
+import com.example.shoppingmall.board.application.dto.UpdateMatchRequest;
 import com.example.shoppingmall.board.domain.type.MatchCategory;
 import com.example.shoppingmall.board.domain.type.MatchStatus;
 import com.example.shoppingmall.core.domain.BaseEntity;
@@ -40,6 +41,9 @@ public class Match extends BaseEntity {
   @Column(name = "max_players")
   private Integer maxPlayers;
 
+  @Column(name = "open_chat_url")
+  private String openChatUrl;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
   private MatchStatus status = MatchStatus.RECRUITING;
@@ -49,7 +53,7 @@ public class Match extends BaseEntity {
 
   @Builder
   public Match(Long id, Member member, MatchCategory category, String title, String content,
-      String location, LocalDateTime matchDate, Integer maxPlayers) {
+      String location, LocalDateTime matchDate, Integer maxPlayers, String openChatUrl) {
     super(id);
     this.member = member;
     this.category = category;
@@ -58,16 +62,17 @@ public class Match extends BaseEntity {
     this.location = location;
     this.matchDate = matchDate;
     this.maxPlayers = maxPlayers;
+    this.openChatUrl = openChatUrl;
   }
 
-  // 정적 팩토리 메서드 - 일반 게시글용
   public static Match createGeneralPost(Member member, MatchCategory category, String title,
-      String content) {
+      String content, String openChatUrl) {
     return Match.builder()
         .member(member)
         .category(category)
         .title(title)
         .content(content)
+        .openChatUrl(openChatUrl)
         .build();
   }
 
@@ -118,13 +123,12 @@ public class Match extends BaseEntity {
   }
 
   // 매칭 게시글 수정 메서드
-  public void updateMatchingPost(String title, String content, String location,
-      LocalDateTime matchDate, Integer maxPlayers) {
-    this.title = title;
-    this.content = content;
-    this.location = location;
-    this.matchDate = matchDate;
-    this.maxPlayers = maxPlayers;
+  public void updateMatchingPost(UpdateMatchRequest request) {
+    this.title = request.getTitle();
+    this.content = request.getContent();
+    this.location = request.getLocation();
+    this.matchDate = request.getMatchDate();
+    this.maxPlayers = request.getMaxPlayers();
   }
 
   // 작성자 확인 메서드

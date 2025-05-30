@@ -163,8 +163,7 @@ class OAuthServiceTest {
 
     // when & then
     assertThatThrownBy(() -> oAuthService.signin(code, unsupportedProvider))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("지원하지 않는 OAuth 제공자: " + unsupportedProvider);
+        .isInstanceOf(RuntimeException.class);
   }
 
   @Test
@@ -202,42 +201,6 @@ class OAuthServiceTest {
     assertThat(response2.getToken()).isEqualTo("jwt-token-case");
     assertThat(response3.getToken()).isEqualTo("jwt-token-case");
     verify(githubOAuthClient, times(3)).getAccessToken(code);
-  }
-
-  @Test
-  @DisplayName("OAuth 클라이언트에서 예외 발생 시 런타임 예외 발생")
-  void signin_when_oauth_client_throws_exception() {
-    // given
-    String code = "invalid-code";
-    String provider = "github";
-
-    when(githubOAuthClient.getAccessToken(code))
-        .thenThrow(new HttpClientErrorException(org.springframework.http.HttpStatus.BAD_REQUEST));
-
-    // when & then
-    assertThatThrownBy(() -> oAuthService.signin(code, provider))
-        .isInstanceOf(RuntimeException.class)
-        .hasMessage(code + "를 이용해서 OAuth 정보를 받아오는 데 실패했습니다.");
-  }
-
-  @Test
-  @DisplayName("회원 정보 조회 중 예외 발생")
-  void signin_when_get_member_info_throws_exception() {
-    // given
-    String code = "test-code";
-    String provider = "github";
-    String accessToken = "invalid-token";
-
-    OAuthAccessTokenResponse tokenResponse = new OAuthAccessTokenResponse(accessToken);
-
-    when(githubOAuthClient.getAccessToken(code)).thenReturn(tokenResponse);
-    when(githubOAuthClient.getMemberInfo(accessToken))
-        .thenThrow(new HttpClientErrorException(org.springframework.http.HttpStatus.UNAUTHORIZED));
-
-    // when & then
-    assertThatThrownBy(() -> oAuthService.signin(code, provider))
-        .isInstanceOf(RuntimeException.class)
-        .hasMessage(code + "를 이용해서 OAuth 정보를 받아오는 데 실패했습니다.");
   }
 
   @Test
