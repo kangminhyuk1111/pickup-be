@@ -36,13 +36,16 @@ class OAuthServiceTest {
   private OAuthClient googleOAuthClient;
 
   @Mock
+  private OAuthClient kakaoOauthClient;
+
+  @Mock
   private TokenProvider tokenProvider;
 
   private OAuthService oAuthService;
 
   @BeforeEach
   void setUp() {
-    oAuthService = new OAuthService(memberRepository, githubOAuthClient, googleOAuthClient, tokenProvider);
+    oAuthService = new OAuthService(memberRepository, githubOAuthClient, googleOAuthClient, kakaoOauthClient, tokenProvider);
   }
 
   @Test

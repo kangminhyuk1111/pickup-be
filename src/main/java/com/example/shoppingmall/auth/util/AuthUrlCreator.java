@@ -35,4 +35,15 @@ public class AuthUrlCreator {
 
         return "redirect:" + authUrl;
     }
+
+    public String kakaoAuthUrl(final String kakaoClientId) {
+        String redirectUri = REDIRECT_URI + "/kakao";
+
+        String authUrl = "https://kauth.kakao.com/oauth/authorize" +
+            "?client_id=" + URLEncoder.encode(kakaoClientId, StandardCharsets.UTF_8) +
+            "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+            "&response_type=code";
+
+        return "redirect:" + authUrl;
+    }
 }

@@ -27,12 +27,6 @@ public class MatchService {
 
   @Transactional
   public Match createMatch(Long memberId, CreateMatchRequest createMatchRequest) {
-    System.out.println("Received request:");
-    System.out.println("  category: " + createMatchRequest.getCategory());
-    System.out.println("  title: " + createMatchRequest.getTitle());
-    System.out.println("  content: " + createMatchRequest.getContent());
-    System.out.println("  location: " + createMatchRequest.getLocation());
-
     final Member member = memberRepository.findById(memberId)
         .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 

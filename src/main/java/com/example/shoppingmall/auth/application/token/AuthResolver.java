@@ -32,7 +32,6 @@ public class AuthResolver implements HandlerMethodArgumentResolver {
 
     String token = extractToken(request);
 
-    // 토큰 유효성 검증 추가
     tokenProvider.validateToken(token);
 
     String payload = tokenProvider.parsePayload(token);
@@ -55,12 +54,12 @@ public class AuthResolver implements HandlerMethodArgumentResolver {
     }
 
     String token = value.substring(BEARER_TYPE.length()).trim();
-    System.out.println("추출된 토큰: [" + token + "]"); // 디버그 로그
+    System.out.println("추출된 토큰: [" + token + "]");
 
     int commaIndex = token.indexOf(',');
     if (commaIndex > 0) {
       token = token.substring(0, commaIndex).trim();
-      System.out.println("콤마 처리 후 토큰: [" + token + "]"); // 디버그 로그
+      System.out.println("콤마 처리 후 토큰: [" + token + "]");
     }
 
     if (token.isEmpty()) {

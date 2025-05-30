@@ -47,7 +47,8 @@ public class GithubOAuthClient implements OAuthClient {
         HttpMethod.GET,
         request,
         GithubMemberInfoResponse.class
-    ).getBody()).toOAuthMemberInfoResponse();
+    ).getBody()).
+         toOAuthMemberInfoResponse();
   }
 
   private HttpEntity<Void> createHttpEntityWithHeader(String accessToken) {

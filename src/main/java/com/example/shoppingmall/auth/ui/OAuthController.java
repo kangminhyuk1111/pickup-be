@@ -14,6 +14,7 @@ public class OAuthController {
 
     private final String githubClientId;
     private final String googleClientId;
+    private final String kakaoClientId;
 
     private final OAuthService oAuthService;
     private final AuthUrlCreator authUrlCreator;
@@ -21,10 +22,12 @@ public class OAuthController {
     public OAuthController(
             @Value("${github.client.id}") String githubClientId,
             @Value("${google.client.id}") String googleClientId,
+            @Value("${kakao.client.id}") String kakaoClientId,
             OAuthService oAuthService,
             AuthUrlCreator authUrlCreator) {
         this.githubClientId = githubClientId;
         this.googleClientId = googleClientId;
+        this.kakaoClientId = kakaoClientId;
         this.oAuthService = oAuthService;
         this.authUrlCreator = authUrlCreator;
     }
@@ -39,6 +42,11 @@ public class OAuthController {
         return authUrlCreator.googleAuthUrl(googleClientId);
     }
 
+    @GetMapping("/login/kakao")
+    public String loginWithKakao() {
+        return authUrlCreator.kakaoAuthUrl(kakaoClientId);
+    }
+
     @GetMapping("/oauth/callback/github")
     public ResponseEntity<?> gitHubCallback(@RequestParam String code) {
         return ResponseEntity.status(HttpStatus.CREATED).body(oAuthService.signin(code, "github"));
@@ -47,5 +55,10 @@ public class OAuthController {
     @GetMapping("/oauth/callback/google")
     public ResponseEntity<?> googleCallback(@RequestParam String code) {
         return ResponseEntity.status(HttpStatus.CREATED).body(oAuthService.signin(code, "google"));
+    }
+
+    @GetMapping("/oauth/callback/kakao")
+    public ResponseEntity<?> kakaoCallback(@RequestParam String code) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(oAuthService.signin(code, "kakao"));
     }
 }

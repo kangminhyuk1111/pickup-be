@@ -17,14 +17,17 @@ public class OAuthService {
   private final MemberRepository memberRepository;
   private final OAuthClient githubOAuthClient;
   private final OAuthClient googleOAuthClient;
+  private final OAuthClient kakaoOauthClient;
   private final TokenProvider tokenProvider;
 
   public OAuthService(MemberRepository memberRepository,
       @Qualifier("githubOAuthClient") OAuthClient githubOAuthClient,
-      @Qualifier("googleOAuthClient") OAuthClient googleOAuthClient, TokenProvider tokenProvider) {
+      @Qualifier("googleOAuthClient") OAuthClient googleOAuthClient,
+      @Qualifier("kakaoOauthClient") OAuthClient kakaoOauthClient, TokenProvider tokenProvider) {
     this.memberRepository = memberRepository;
     this.githubOAuthClient = githubOAuthClient;
     this.googleOAuthClient = googleOAuthClient;
+    this.kakaoOauthClient = kakaoOauthClient;
     this.tokenProvider = tokenProvider;
   }
 
@@ -44,17 +47,25 @@ public class OAuthService {
     return switch (provider.toLowerCase()) {
       case "github" -> githubOAuthClient;
       case "google" -> googleOAuthClient;
+      case "kakao" -> kakaoOauthClient;
       default -> throw new IllegalArgumentException("지원하지 않는 OAuth 제공자: " + provider);
     };
   }
 
   private OAuthMemberInfoResponse getOAuthMemberInfo(String code, OAuthClient client) {
-    try {
       OAuthAccessTokenResponse tokenResponse = client.getAccessToken(code);
-      return client.getMemberInfo(tokenResponse.getAccessToken());
-    } catch (HttpClientErrorException e) {
-      throw new RuntimeException(code + "를 이용해서 OAuth 정보를 받아오는 데 실패했습니다.");
-    }
+
+      if (tokenResponse == null) {
+        throw new RuntimeException("토큰 응답이 null입니다");
+      }
+
+      String accessToken = tokenResponse.getAccessToken();
+
+      if (accessToken == null || accessToken.isEmpty()) {
+        throw new RuntimeException("액세스 토큰이 null이거나 비어있습니다");
+      }
+
+      return client.getMemberInfo(accessToken);
   }
 
   private Member findOrSaveMember(OAuthMemberInfoResponse memberResponse) {
