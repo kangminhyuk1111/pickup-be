@@ -17,6 +17,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     List<Member> findByProviderType(ProviderType providerType);
 
+    boolean existsByOauthId(String oauthId);
+
     @Query("SELECT m FROM Member m WHERE m.oauthId = :oauthId AND m.providerType = :providerType")
     Optional<Member> findByOauthIdAndProviderType(@Param("oauthId") String oauthId,
         @Param("providerType") ProviderType providerType);

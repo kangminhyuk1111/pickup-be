@@ -1,7 +1,6 @@
 package com.example.shoppingmall.auth.domain.member;
 
 import com.example.shoppingmall.auth.domain.type.ProviderType;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,7 +159,7 @@ class MemberRepositoryTest {
     Member savedMember = memberRepository.save(member);
 
     // when
-    savedMember.updateProfile("새로운이름", "https://example.com/new.jpg");
+    savedMember.updateProfileUrl("새로운이름", "https://example.com/new.jpg");
     Member updatedMember = memberRepository.save(savedMember);
 
     // then

@@ -57,7 +57,7 @@ public class MatchService {
 
   @Transactional(readOnly = true)
   public List<MatchResponse> findAllMatches() {
-    final List<Match> matches = matchRepository.findAll();
+    final List<Match> matches = matchRepository.findAllWithMember();
     return matches.stream().map(MatchResponse::from).toList();
   }
 

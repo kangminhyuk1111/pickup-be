@@ -3,13 +3,18 @@ package com.example.shoppingmall.auth.application.service;
 import com.example.shoppingmall.auth.application.client.OAuthClient;
 import com.example.shoppingmall.auth.application.dto.OAuthAccessTokenResponse;
 import com.example.shoppingmall.auth.application.dto.OAuthMemberInfoResponse;
+import com.example.shoppingmall.auth.application.dto.SignUpRequest;
+import com.example.shoppingmall.auth.application.dto.SignUpResponse;
+import com.example.shoppingmall.auth.application.dto.SignUpResponse.MemberDto;
 import com.example.shoppingmall.auth.application.dto.SigninResponse;
 import com.example.shoppingmall.auth.application.token.TokenProvider;
 import com.example.shoppingmall.auth.domain.member.Member;
 import com.example.shoppingmall.auth.domain.member.MemberRepository;
+import com.example.shoppingmall.auth.domain.type.ProviderType;
+import io.jsonwebtoken.Claims;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 public class OAuthService {
@@ -31,16 +36,45 @@ public class OAuthService {
     this.tokenProvider = tokenProvider;
   }
 
+  @Transactional
   public SigninResponse signin(String code, String provider) {
     OAuthClient client = selectClient(provider);
-
     OAuthMemberInfoResponse memberInfoResponse = getOAuthMemberInfo(code, client);
+
+    boolean isNewUser = !memberRepository.existsByOauthId(memberInfoResponse.getOauthId());
 
     Member member = findOrSaveMember(memberInfoResponse);
 
-    String token = tokenProvider.createToken(String.valueOf(member.getId()));
+    String token;
+    if (isNewUser) {
+      token = tokenProvider.createTempToken(
+          memberInfoResponse.getOauthId(),
+          memberInfoResponse.getName(),
+          memberInfoResponse.getProviderType()
+      );
+    } else {
+      token = tokenProvider.createToken(String.valueOf(member.getId()));
+    }
 
-    return new SigninResponse(token);
+    return new SigninResponse(token, isNewUser, memberInfoResponse.getName());
+  }
+
+  @Transactional
+  public SignUpResponse signUp(final SignUpRequest request, final String tempToken) {
+    final Claims claims = tokenProvider.getClaims(tempToken);
+    final String oauthId = claims.get("oauthId", String.class);
+    final String provider = claims.get("provider", String.class);
+
+    final ProviderType providerType = ProviderType.valueOf(provider);
+
+    final Member member = memberRepository.findByOauthIdAndProviderType(oauthId, providerType)
+        .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+
+    member.updateSignUp(request);
+
+    final String token = tokenProvider.createToken(String.valueOf(member.getId()));
+
+    return new SignUpResponse(token, new MemberDto(member));
   }
 
   private OAuthClient selectClient(String provider) {
@@ -53,19 +87,19 @@ public class OAuthService {
   }
 
   private OAuthMemberInfoResponse getOAuthMemberInfo(String code, OAuthClient client) {
-      OAuthAccessTokenResponse tokenResponse = client.getAccessToken(code);
+    OAuthAccessTokenResponse tokenResponse = client.getAccessToken(code);
 
-      if (tokenResponse == null) {
-        throw new RuntimeException("토큰 응답이 null입니다");
-      }
+    if (tokenResponse == null) {
+      throw new RuntimeException("토큰 응답이 null입니다");
+    }
 
-      String accessToken = tokenResponse.getAccessToken();
+    String accessToken = tokenResponse.getAccessToken();
 
-      if (accessToken == null || accessToken.isEmpty()) {
-        throw new RuntimeException("액세스 토큰이 null이거나 비어있습니다");
-      }
+    if (accessToken == null || accessToken.isEmpty()) {
+      throw new RuntimeException("액세스 토큰이 null이거나 비어있습니다");
+    }
 
-      return client.getMemberInfo(accessToken);
+    return client.getMemberInfo(accessToken);
   }
 
   private Member findOrSaveMember(OAuthMemberInfoResponse memberResponse) {

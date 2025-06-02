@@ -9,6 +9,7 @@ import com.example.shoppingmall.board.application.dto.UpdateMatchRequest;
 import com.example.shoppingmall.board.application.service.MatchService;
 import com.example.shoppingmall.board.domain.match.Match;
 import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/match")
+@RequestMapping("/api/matches")
 public class MatchController {
 
   private final MatchService matchService;
@@ -34,8 +35,8 @@ public class MatchController {
     return matchService.createMatch(userId, createMatchRequest);
   }
 
-  @GetMapping
-  public List<MatchResponse> findAllMatches() {
+  @GetMapping()
+  public List<MatchResponse> findAll() {
     return matchService.findAllMatches();
   }
 

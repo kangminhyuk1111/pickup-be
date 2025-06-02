@@ -1,5 +1,7 @@
 package com.example.shoppingmall.auth.domain.member;
 
+import com.example.shoppingmall.auth.application.dto.SignUpRequest;
+import com.example.shoppingmall.auth.domain.type.Position;
 import com.example.shoppingmall.auth.domain.type.Role;
 import com.example.shoppingmall.auth.domain.type.ProviderType;
 import com.example.shoppingmall.core.domain.BaseEntity;
@@ -14,10 +16,17 @@ import java.util.Objects;
 @Getter
 public class Member extends BaseEntity {
 
+  @Column(name = "email", unique = true)
+  private String email;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "position")
+  private Position position;
+
   @Column(name = "oauth_id", nullable = false, unique = true)
   private String oauthId;
 
-  @Column(nullable = false)
+  @Column(name = "name", nullable = false)
   private String name;
 
   @Column(name = "profile_url")
@@ -44,22 +53,15 @@ public class Member extends BaseEntity {
     this.providerType = providerType;
   }
 
-  public void updateProfile(String name, String profileUrl) {
+  public void updateProfileUrl(String name, String profileUrl) {
     this.name = name;
     this.profileUrl = profileUrl;
   }
 
-  @Override
-  public boolean equals(Object o) {
-      if (o == null || getClass() != o.getClass()) {
-          return false;
-      }
-    Member member = (Member) o;
-    return Objects.equals(oauthId, member.oauthId);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(oauthId);
+  public void updateSignUp(SignUpRequest request) {
+    this.email = request.getEmail();
+    this.name = request.getNickname();
+    this.providerType = request.getProvider();
+    this.position = request.getPosition();
   }
 }

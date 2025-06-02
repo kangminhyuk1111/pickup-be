@@ -67,8 +67,11 @@ class MatchServiceTest {
           "새로운 매치",
           "매치 내용",
           "부산시 해운대구",
+          "청정 농구코트 1",
           LocalDateTime.now().plusDays(2),
-          8
+          8,
+          "localhost",
+          "6vs6"
       );
 
       Match mockMatch = mock(Match.class);
@@ -94,8 +97,11 @@ class MatchServiceTest {
           "새로운 매치",
           "매치 내용",
           "부산시 해운대구",
+          "청정 농구코트 1",
           LocalDateTime.now().plusDays(2),
-          8
+          8,
+          "localhost",
+          "6vs6"
       );
 
       when(memberRepository.findById(userId)).thenReturn(Optional.empty());
@@ -227,20 +233,18 @@ class MatchServiceTest {
       verify(matchRepository).findById(matchId);
     }
 
-    // Mock 객체에서 Member 관계를 제대로 설정하는 헬퍼 메서드
     private Match createMockMatchWithMember() {
       Match mockMatch = mock(Match.class);
       Member mockMember = mock(Member.class);
 
-      // Member mock 설정
       when(mockMember.getId()).thenReturn(userId);
 
-      // Match mock에서 Member 반환하도록 설정
       when(mockMatch.getMember()).thenReturn(mockMember);
       when(mockMatch.getId()).thenReturn(matchId);
       when(mockMatch.getTitle()).thenReturn("테스트 매치");
       when(mockMatch.getContent()).thenReturn("테스트 내용");
-      when(mockMatch.getLocation()).thenReturn("테스트 위치");
+      when(mockMatch.getLocationArea()).thenReturn("테스트 위치 1");
+      when(mockMatch.getLocationDetail()).thenReturn("테스트 위치 2");
       when(mockMatch.getMatchDate()).thenReturn(LocalDateTime.now());
       when(mockMatch.getMaxPlayers()).thenReturn(8);
       when(mockMatch.getCategory()).thenReturn(MatchCategory.MATCHING);

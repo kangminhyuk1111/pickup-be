@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateMatchRequest {
 
-  @JsonProperty("category")  // 명시적으로 매핑
+  @JsonProperty("category")
   private MatchCategory category;
 
   @JsonProperty("title")
@@ -22,8 +22,11 @@ public class UpdateMatchRequest {
   @JsonProperty("content")
   private String content;
 
-  @JsonProperty("location")
-  private String location;
+  @JsonProperty("locationArea")
+  private String locationArea;
+
+  @JsonProperty("locationDetail")
+  private String locationDetail;
 
   @JsonProperty("matchDate")
   private LocalDateTime matchDate;
@@ -31,19 +34,25 @@ public class UpdateMatchRequest {
   @JsonProperty("maxPlayers")
   private Integer maxPlayers;
 
+  @JsonProperty("gameFormat")
+  private String gameFormat;
+
   @JsonProperty("openChatUrl")
   private String openChatUrl;
 
   @Builder
   public UpdateMatchRequest(MatchCategory category, String title, String content,
-      String location, LocalDateTime matchDate, Integer maxPlayers, String openChatUrl) {
+      String locationArea, String locationDetail, LocalDateTime matchDate, Integer maxPlayers, String openChatUrl,
+      String gameFormat) {
     this.category = category;
     this.title = title;
     this.content = content;
-    this.location = location;
+    this.locationArea = locationArea;
+    this.locationDetail = locationDetail;
     this.matchDate = matchDate;
     this.maxPlayers = maxPlayers;
     this.openChatUrl = openChatUrl;
+    this.gameFormat = gameFormat;
   }
 
   public UpdateMatchRequest(MatchCategory category, String title, String content) {
@@ -57,34 +66,11 @@ public class UpdateMatchRequest {
         member,
         this.title,
         this.content,
-        this.location,
+        this.locationArea,
+        this.locationDetail,
         this.matchDate,
-        this.maxPlayers
+        this.maxPlayers,
+        this.gameFormat
     );
-  }
-
-  public boolean isMatchingPost() {
-    return this.category == MatchCategory.MATCHING;
-  }
-
-  public static CreateMatchRequest createFreePost(String title, String content) {
-    return new CreateMatchRequest(MatchCategory.FREE, title, content);
-  }
-
-  public static CreateMatchRequest createNotice(String title, String content) {
-    return new CreateMatchRequest(MatchCategory.NOTICE, title, content);
-  }
-
-  public static CreateMatchRequest createMatchingPost(String title, String content,
-      String location, LocalDateTime matchDate,
-      Integer maxPlayers) {
-    return CreateMatchRequest.builder()
-        .category(MatchCategory.MATCHING)
-        .title(title)
-        .content(content)
-        .location(location)
-        .matchDate(matchDate)
-        .maxPlayers(maxPlayers)
-        .build();
   }
 }
