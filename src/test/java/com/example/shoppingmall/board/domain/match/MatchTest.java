@@ -40,10 +40,11 @@ class MatchTest {
       final String locationDetail = "대진체육관";
       final Integer maxPlayers = 20;
       final String gameFormat = "5vs5 3파전";
+      final String openChatUrl = "https://openchaturl.com";
 
       // when
       final Match match = Match.createMatchingPost(
-          member, title, content, locationArea, locationDetail, matchDate, maxPlayers, gameFormat
+          member, title, content, locationArea, locationDetail, matchDate, maxPlayers, gameFormat, openChatUrl
       );
 
       // then
@@ -69,10 +70,11 @@ class MatchTest {
       final String locationDetail = "천마 풋살파크";
       final Integer maxPlayers = 20;
       final String gameFormat = "5vs5 3파전";
+      final String openChatUrl = "https://openchaturl.com";
 
       // when
       final Match match = Match.createMatchingPost(
-          member, title, content, locationArea, locationDetail, matchDate, maxPlayers, gameFormat
+          member, title, content, locationArea, locationDetail, matchDate, maxPlayers, gameFormat, openChatUrl
       );
 
       // then
@@ -145,8 +147,9 @@ class MatchTest {
     void 조회수_증가_처음_조회() {
       // given
       final String gameFormat = "5vs5 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // when
@@ -161,8 +164,9 @@ class MatchTest {
     void 조회수_증가_여러번_조회() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // when
@@ -205,8 +209,9 @@ class MatchTest {
     void 매칭_게시글_여부_확인_true() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // when & then
@@ -228,8 +233,9 @@ class MatchTest {
     void 모집_중_상태_확인() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // when & then
@@ -241,8 +247,9 @@ class MatchTest {
     void 매칭_완료_처리_성공() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // when
@@ -271,8 +278,9 @@ class MatchTest {
     void 매칭_종료_처리_성공() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // when
@@ -321,8 +329,9 @@ class MatchTest {
     void 매칭_게시글_수정_성공() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "원래 제목", "원래 내용", "원래 지역", "원래 장소", matchDate, 10, gameFormat
+          member, "원래 제목", "원래 내용", "원래 지역", "원래 장소", matchDate, 10, gameFormat, openChatUrl
       );
 
       final String newTitle = "수정된 제목";
@@ -355,8 +364,9 @@ class MatchTest {
     void 매칭_게시글_수정_일부_필드만_변경() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "원래 제목", "원래 내용", "원래 지역", "원래 장소", matchDate, 10, gameFormat
+          member, "원래 제목", "원래 내용", "원래 지역", "원래 장소", matchDate, 10, gameFormat, openChatUrl
       );
 
       final String newTitle = "수정된 제목";
@@ -388,8 +398,9 @@ class MatchTest {
     void 작성자_확인_Member_객체로_확인_성공() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // when & then
@@ -401,8 +412,9 @@ class MatchTest {
     void 작성자_확인_Member_객체로_확인_실패() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
       final Member otherMember = Member.builder().id(2L).build();
 
@@ -420,8 +432,9 @@ class MatchTest {
     void 작성자_확인_memberId로_확인_성공() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // when & then
@@ -433,8 +446,9 @@ class MatchTest {
     void 작성자_확인_memberId로_확인_실패() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // when & then
@@ -534,8 +548,9 @@ class MatchTest {
     void equals_자기_자신과는_동일함() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // when & then
@@ -547,8 +562,9 @@ class MatchTest {
     void equals_null과는_동일하지_않음() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // when & then
@@ -560,8 +576,9 @@ class MatchTest {
     void equals_다른_클래스와는_동일하지_않음() {
       // given
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
       final String other = "not a match";
 
@@ -604,8 +621,9 @@ class MatchTest {
     void 매칭_게시글에서_maxPlayers가_null() {
       // given & when
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, null, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", matchDate, null, gameFormat, openChatUrl
       );
 
       // then
@@ -618,8 +636,9 @@ class MatchTest {
     void 매칭_게시글에서_matchDate가_null() {
       // given & when
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
       final Match match = Match.createMatchingPost(
-          member, "제목", "내용", "강남구 대청동", "대진체육관", null, 10, gameFormat
+          member, "제목", "내용", "강남구 대청동", "대진체육관", null, 10, gameFormat, openChatUrl
       );
 
       // then
@@ -633,10 +652,11 @@ class MatchTest {
       // given
       final String longContent = "a".repeat(10000); // 10,000자
       final String gameFormat = "6vs6 3파전";
+      final String openChatUrl = "https://openchaturl.com";
 
       // when
       final Match match = Match.createMatchingPost(
-          member, "제목", longContent, "강남구 대청동", "대진체육관", matchDate, 10, gameFormat
+          member, "제목", longContent, "강남구 대청동", "대진체육관", matchDate, 10, gameFormat, openChatUrl
       );
 
       // then

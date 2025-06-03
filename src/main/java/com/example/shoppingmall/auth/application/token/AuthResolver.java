@@ -1,5 +1,7 @@
 package com.example.shoppingmall.auth.application.token;
 
+import com.example.shoppingmall.core.exception.AuthorizationException;
+import com.example.shoppingmall.core.exception.CustomErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -35,35 +37,32 @@ public class AuthResolver implements HandlerMethodArgumentResolver {
     tokenProvider.validateToken(token);
 
     String payload = tokenProvider.parsePayload(token);
+
     return Long.parseLong(payload);
   }
 
   private String extractToken(HttpServletRequest request) {
-    String value = request.getHeader(AUTHORIZATION);
-    System.out.println("Authorization 헤더 값: [" + value + "]"); // 디버그 로그
+    String authHeader = request.getHeader(AUTHORIZATION);
 
-    if (value == null || value.trim().isEmpty()) {
-      throw new IllegalArgumentException("Authorization 헤더가 없거나 비어있습니다.");
+    if (authHeader == null || authHeader.trim().isEmpty()) {
+      throw new AuthorizationException(CustomErrorCode.TOKEN_NOT_FOUND);
     }
 
-    value = value.trim();
-    System.out.println("trim 후 값: [" + value + "]"); // 디버그 로그
+    authHeader = authHeader.trim();
 
-    if (!value.toLowerCase().startsWith(BEARER_TYPE.toLowerCase())) {
-      throw new IllegalArgumentException("Bearer 토큰이 아닙니다. 현재 값: " + value);
+    if (!authHeader.toLowerCase().startsWith(BEARER_TYPE.toLowerCase())) {
+      throw new AuthorizationException(CustomErrorCode.INVALID_TOKEN);
     }
 
-    String token = value.substring(BEARER_TYPE.length()).trim();
-    System.out.println("추출된 토큰: [" + token + "]");
+    String token = authHeader.substring(BEARER_TYPE.length()).trim();
 
     int commaIndex = token.indexOf(',');
     if (commaIndex > 0) {
       token = token.substring(0, commaIndex).trim();
-      System.out.println("콤마 처리 후 토큰: [" + token + "]");
     }
 
     if (token.isEmpty()) {
-      throw new IllegalArgumentException("Bearer 토큰이 비어있습니다.");
+      throw new AuthorizationException(CustomErrorCode.BEARER_NOT_FOUND);
     }
 
     return token;

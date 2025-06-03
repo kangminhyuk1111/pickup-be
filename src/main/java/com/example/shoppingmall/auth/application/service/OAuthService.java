@@ -11,6 +11,8 @@ import com.example.shoppingmall.auth.application.token.TokenProvider;
 import com.example.shoppingmall.auth.domain.member.Member;
 import com.example.shoppingmall.auth.domain.member.MemberRepository;
 import com.example.shoppingmall.auth.domain.type.ProviderType;
+import com.example.shoppingmall.core.exception.AuthorizationException;
+import com.example.shoppingmall.core.exception.CustomErrorCode;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -68,7 +70,7 @@ public class OAuthService {
     final ProviderType providerType = ProviderType.valueOf(provider);
 
     final Member member = memberRepository.findByOauthIdAndProviderType(oauthId, providerType)
-        .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+        .orElseThrow(() -> new AuthorizationException(CustomErrorCode.USER_NOT_FOUND));
 
     member.updateSignUp(request);
 
@@ -90,13 +92,13 @@ public class OAuthService {
     OAuthAccessTokenResponse tokenResponse = client.getAccessToken(code);
 
     if (tokenResponse == null) {
-      throw new RuntimeException("토큰 응답이 null입니다");
+      throw new AuthorizationException(CustomErrorCode.INVALID_TOKEN);
     }
 
     String accessToken = tokenResponse.getAccessToken();
 
     if (accessToken == null || accessToken.isEmpty()) {
-      throw new RuntimeException("액세스 토큰이 null이거나 비어있습니다");
+      throw new AuthorizationException(CustomErrorCode.TOKEN_NOT_FOUND);
     }
 
     return client.getMemberInfo(accessToken);
