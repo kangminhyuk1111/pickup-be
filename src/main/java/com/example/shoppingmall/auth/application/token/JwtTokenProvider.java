@@ -78,7 +78,8 @@ public class JwtTokenProvider implements TokenProvider {
     claims.put("provider", provider);
     claims.put("type", "temp");
 
-    return Jwts.builder().setClaims(claims)
+    return Jwts.builder()
+            .setClaims(claims)
         .setExpiration(new Date(System.currentTimeMillis() + 1800000))
         .signWith(key, SignatureAlgorithm.HS256).compact();
   }

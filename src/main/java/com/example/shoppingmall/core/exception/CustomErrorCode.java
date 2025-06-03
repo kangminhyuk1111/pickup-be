@@ -10,6 +10,7 @@ public enum CustomErrorCode {
     INVALID_REQUEST(400, "COMMON_002", "잘못된 요청입니다."),
     RESOURCE_NOT_FOUND(404, "COMMON_003", "요청한 리소스를 찾을 수 없습니다."),
     METHOD_NOT_ALLOWED(405, "COMMON_004", "허용되지 않은 HTTP 메서드입니다."),
+    INVALID_OAUTH_CLIENT(405, "COMMON_004", "잘못된 Oauth 요청 클라이언트가 입력되었습니다."),
 
     // 회원가입
     USER_ALREADY_EXISTS(409, "USER_001", "이미 존재하는 사용자입니다."),
