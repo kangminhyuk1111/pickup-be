@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: Java CI with Build Time Analysis
 
 on:
   push:
@@ -28,7 +28,25 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582
 
-      - name: Build with Gradle Wrapper
+      # 시스템 사양 확인
+      - name: Check system specs
+        run: |
+          echo "=== System Specifications ==="
+          echo "CPU cores: $(nproc)"
+          echo "Memory: $(free -h)"
+          echo "Disk space: $(df -h /)"
+          echo "Java version: $(java -version)"
+          echo "================================"
+
+      # 의존성 다운로드 시간 측정
+      - name: Download dependencies (Time Check)
+        run: |
+          echo "Starting dependency download at $(date)"
+          time ./gradlew dependencies --no-daemon
+          echo "Finished dependency download at $(date)"
+
+      # 컴파일 시간 측정
+      - name: Compile sources (Time Check)
         env:
           DB_URL: ${{ secrets.DB_URL }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
@@ -53,4 +71,69 @@ jobs:
           JWT_EXPIRE_LENGTH: ${{ secrets.JWT_EXPIRE_LENGTH }}
           CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
           CSRF_ENABLED: ${{ secrets.CSRF_ENABLED }}
-        run: ./gradlew build
+        run: |
+          echo "Starting compilation at $(date)"
+          time ./gradlew compileJava --no-daemon
+          echo "Finished compilation at $(date)"
+
+      # 테스트 시간 측정
+      - name: Run tests (Time Check)
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JPA_DDL_AUTO: ${{ secrets.JPA_DDL_AUTO }}
+          JPA_SHOW_SQL: ${{ secrets.JPA_SHOW_SQL }}
+          JPA_FORMAT_SQL: ${{ secrets.JPA_FORMAT_SQL }}
+          THYMELEAF_CACHE: ${{ secrets.THYMELEAF_CACHE }}
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+          HIBERNATE_LOG_LEVEL: ${{ secrets.HIBERNATE_LOG_LEVEL }}
+          HIBERNATE_BINDING_LOG_LEVEL: ${{ secrets.HIBERNATE_BINDING_LOG_LEVEL }}
+          GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET }}
+          GITHUB_REDIRECT_URI: ${{ secrets.GITHUB_REDIRECT_URI }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_EXPIRE_LENGTH: ${{ secrets.JWT_EXPIRE_LENGTH }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          CSRF_ENABLED: ${{ secrets.CSRF_ENABLED }}
+        run: |
+          echo "Starting tests at $(date)"
+          time ./gradlew test --no-daemon
+          echo "Finished tests at $(date)"
+
+      # 전체 빌드 시간 측정
+      - name: Full build (Time Check)
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JPA_DDL_AUTO: ${{ secrets.JPA_DDL_AUTO }}
+          JPA_SHOW_SQL: ${{ secrets.JPA_SHOW_SQL }}
+          JPA_FORMAT_SQL: ${{ secrets.JPA_FORMAT_SQL }}
+          THYMELEAF_CACHE: ${{ secrets.THYMELEAF_CACHE }}
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+          HIBERNATE_LOG_LEVEL: ${{ secrets.HIBERNATE_LOG_LEVEL }}
+          HIBERNATE_BINDING_LOG_LEVEL: ${{ secrets.HIBERNATE_BINDING_LOG_LEVEL }}
+          GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET }}
+          GITHUB_REDIRECT_URI: ${{ secrets.GITHUB_REDIRECT_URI }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_EXPIRE_LENGTH: ${{ secrets.JWT_EXPIRE_LENGTH }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          CSRF_ENABLED: ${{ secrets.CSRF_ENABLED }}
+        run: |
+          echo "Starting full build at $(date)"
+          time ./gradlew build --no-daemon --info
+          echo "Finished full build at $(date)"
