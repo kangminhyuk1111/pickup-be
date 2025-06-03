@@ -4,33 +4,53 @@ on:
   push:
     branches: [ "main" ]
 
-# 읽기 권한 부여
 permissions:
   contents: read
 
-# 작업의 단위
 jobs:
   spring-build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    # Gradlew 권한 설정
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582
 
-    - name: Build with Gradle Wrapper
-      run: ./gradlew build
+      - name: Build with Gradle Wrapper
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JPA_DDL_AUTO: ${{ secrets.JPA_DDL_AUTO }}
+          JPA_SHOW_SQL: ${{ secrets.JPA_SHOW_SQL }}
+          JPA_FORMAT_SQL: ${{ secrets.JPA_FORMAT_SQL }}
+          THYMELEAF_CACHE: ${{ secrets.THYMELEAF_CACHE }}
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+          HIBERNATE_LOG_LEVEL: ${{ secrets.HIBERNATE_LOG_LEVEL }}
+          HIBERNATE_BINDING_LOG_LEVEL: ${{ secrets.HIBERNATE_BINDING_LOG_LEVEL }}
+          GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET }}
+          GITHUB_REDIRECT_URI: ${{ secrets.GITHUB_REDIRECT_URI }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_EXPIRE_LENGTH: ${{ secrets.JWT_EXPIRE_LENGTH }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          CSRF_ENABLED: ${{ secrets.CSRF_ENABLED }}
+        run: ./gradlew build
