@@ -84,7 +84,7 @@ public class OAuthService {
       case "github" -> githubOAuthClient;
       case "google" -> googleOAuthClient;
       case "kakao" -> kakaoOauthClient;
-      default -> throw new IllegalArgumentException("지원하지 않는 OAuth 제공자: " + provider);
+      default -> throw new AuthorizationException(CustomErrorCode.INVALID_OAUTH_CLIENT);
     };
   }
 
