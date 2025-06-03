@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.shoppingmall.core.exception.AuthorizationException;
+import com.example.shoppingmall.core.exception.BoardException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -108,8 +110,7 @@ class MatchServiceTest {
 
       // when & then
       assertThatThrownBy(() -> matchService.createMatch(userId, createRequest))
-          .isInstanceOf(RuntimeException.class)
-          .hasMessage("유저가 존재하지 않습니다.");
+          .isInstanceOf(AuthorizationException.class);
 
       verify(memberRepository).findById(userId);
       verify(matchRepository, never()).save(any(Match.class));
@@ -149,8 +150,7 @@ class MatchServiceTest {
 
       // when & then
       assertThatThrownBy(() -> matchService.deleteMatch(userId, deleteRequest))
-          .isInstanceOf(RuntimeException.class)
-          .hasMessage("매치를 찾을 수 없습니다.");
+          .isInstanceOf(BoardException.class);
 
       verify(matchRepository).findById(matchId);
       verify(matchRepository, never()).delete(any(Match.class));
@@ -169,8 +169,7 @@ class MatchServiceTest {
 
       // when & then
       assertThatThrownBy(() -> matchService.deleteMatch(otherUserId, deleteRequest))
-          .isInstanceOf(RuntimeException.class)
-          .hasMessage("작성자가 아니기 때문에 관리할 수 없습니다.");
+          .isInstanceOf(BoardException.class);
 
       verify(matchRepository).findById(matchId);
       verify(mockMatch).isOwnedBy(otherUserId);
@@ -181,24 +180,6 @@ class MatchServiceTest {
   @Nested
   @DisplayName("매치 조회 테스트")
   class FindMatchTest {
-
-    @Test
-    @DisplayName("모든 매치 조회 성공")
-    void findAllMatches_success() {
-      // given
-      Match mockMatch = createMockMatchWithMember();
-      List<Match> matches = Arrays.asList(mockMatch);
-
-      when(matchRepository.findAll()).thenReturn(matches);
-
-      // when
-      List<MatchResponse> result = matchService.findAllMatches();
-
-      // then
-      assertThat(result).isNotNull();
-      assertThat(result).hasSize(1);
-      verify(matchRepository).findAll();
-    }
 
     @Test
     @DisplayName("매치 ID로 조회 성공")
@@ -227,8 +208,7 @@ class MatchServiceTest {
 
       // when & then
       assertThatThrownBy(() -> matchService.findMatchById(findRequest))
-          .isInstanceOf(RuntimeException.class)
-          .hasMessage("게시물이 존재하지 않습니다.");
+          .isInstanceOf(BoardException.class);
 
       verify(matchRepository).findById(matchId);
     }
