@@ -87,195 +87,31 @@ jobs:
           done
 
       - name: EC2에 JAR 파일 업로드
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
+          username: ubuntu
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "build/libs/*.jar"
-          target: "/home/ubuntu/"
-          strip_components: 2
-          debug: true
+          source: "build/libs/shop-0.0.1-SNAPSHOT.jar"
+          target: "/home/ubuntu/action/"
 
-      - name: EC2 서버 상태 확인 (사전 점검)
-        uses: appleboy/ssh-action@v1.0.3
+      - name: EC2에서 애플리케이션 실행
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
+          username: ubuntu
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          timeout: 60s
           script: |
-            echo "=== 🔍 EC2 서버 사전 점검 ==="
-            echo "현재 시간: $(date)"
-            echo "서버 정보: $(uname -a)"
-            echo "메모리 사용량:"
-            free -h
-            echo "디스크 사용량:"
-            df -h /home/ubuntu
-            echo "현재 디렉토리 위치: $(pwd)"
-            echo "Java 설치 확인:"
-            java -version 2>&1 || echo "❌ Java가 설치되지 않음"
-            echo "네트워크 연결 확인:"
-            curl -s http://google.com > /dev/null && echo "✅ 인터넷 연결 정상" || echo "❌ 인터넷 연결 문제"
-
-      - name: EC2 서버에 애플리케이션 배포 (디버깅 모드)
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          timeout: 180s
-          command_timeout: 120s
-          script: |
-            #!/bin/bash
-            set -e  # 에러 발생시 즉시 중단
-            
-            echo "=== 🚀 배포 시작 (디버깅 모드) ==="
-            echo "스크립트 시작 시간: $(date)"
-            
-            # 디렉토리 이동
-            cd /home/ubuntu
-            echo "✅ 현재 작업 디렉토리: $(pwd)"
-            
-            # 1단계: 환경 확인
-            echo ""
-            echo "=== 📋 1단계: 환경 확인 ==="
-            echo "Java 버전:"
-            java -version 2>&1 | head -3
-            echo "사용자: $(whoami)"
-            echo "홈 디렉토리 권한:"
-            ls -la /home/ubuntu | head -5
-            
-            # 2단계: 기존 프로세스 확인 (종료하지 않음)
-            echo ""
-            echo "=== 🔄 2단계: 기존 프로세스 확인 ==="
-            EXISTING_JAVA_PROCESSES=$(pgrep -f "java.*jar" || echo "")
-            if [ -n "$EXISTING_JAVA_PROCESSES" ]; then
-                echo "기존 Java 프로세스 발견:"
-                echo "$EXISTING_JAVA_PROCESSES"
-                echo "프로세스 상세 정보:"
-                ps aux | grep "java.*jar" | grep -v grep || echo "상세 정보 없음"
-                echo "⚠️ 기존 프로세스는 유지하고 새 프로세스를 다른 포트로 시작합니다"
-                NEW_PORT=8081
-            else
-                echo "✅ 실행 중인 Java 프로세스 없음"
-                NEW_PORT=8080
+            # 8080 포트에서 실행 중인 기존 프로세스 종료
+            if lsof -i:8080 -t >/dev/null; then
+              echo "기존 프로세스 종료 중..."
+              kill -9 $(lsof -i:8080 -t)
+              sleep 3
             fi
             
-            # 3단계: 파일 시스템 확인
-            echo ""
-            echo "=== 📁 3단계: 파일 시스템 확인 ==="
-            echo "전체 파일 목록:"
-            ls -la
-            echo ""
-            echo "JAR 파일 상세 분석:"
-            if ls *.jar 1> /dev/null 2>&1; then
-                for jar in *.jar; do
-                    echo "파일명: $jar"
-                    echo "  크기: $(du -h "$jar" | cut -f1)"
-                    echo "  수정시간: $(stat -c %y "$jar")"
-                    echo "  권한: $(ls -l "$jar" | cut -d' ' -f1)"
-                    echo "  소유자: $(ls -l "$jar" | cut -d' ' -f3-4)"
-                    if [[ "$jar" == *"plain"* ]]; then
-                        echo "  ⚠️ 이 파일은 plain.jar입니다 (의존성 미포함)"
-                    else
-                        echo "  ✅ 실행 가능한 JAR 파일로 추정됩니다"
-                    fi
-                    echo ""
-                done
-            else
-                echo "❌ JAR 파일이 없습니다!"
-                echo "업로드 실패 가능성 확인 필요"
-                exit 1
-            fi
+            # 새로운 애플리케이션 실행 (환경변수 포함)
+            echo "새 애플리케이션 시작 중..."
+            nohup bash -c "source /home/ubuntu/.bashrc && java -jar /home/ubuntu/action/build/libs/shop-0.0.1-SNAPSHOT.jar" > /home/ubuntu/action/app.log 2>&1 &
             
-            # 4단계: 실행할 JAR 파일 선택
-            echo "=== 🎯 4단계: 실행 파일 선택 ==="
-            # plain.jar 제외하고 가장 큰 파일 선택 (의존성 포함된 파일일 가능성이 높음)
-            JAR_FILE=$(ls -la *.jar | grep -v "plain" | sort -k5 -nr | head -n1 | awk '{print $9}')
-            
-            if [ -z "$JAR_FILE" ] || [ ! -f "$JAR_FILE" ]; then
-                echo "❌ 실행 가능한 JAR 파일을 찾을 수 없습니다"
-                echo "사용 가능한 파일들:"
-                ls -la *.jar
-                exit 1
-            fi
-            
-            echo "선택된 JAR 파일: $JAR_FILE"
-            echo "파일 크기: $(du -h "$JAR_FILE" | cut -f1)"
-            
-            # JAR 파일 내용 간단 확인
-            echo "JAR 파일 내용 미리보기:"
-            jar tf "$JAR_FILE" | grep -E "(BOOT-INF|META-INF|MANIFEST)" | head -5 || echo "JAR 내용 확인 불가"
-            
-            # 5단계: 애플리케이션 시작
-            echo ""
-            echo "=== 🚀 5단계: 애플리케이션 시작 ==="
-            echo "시작 시간: $(date)"
-            echo "명령어: java -Xms512m -Xmx1024m -Dserver.port=$NEW_PORT -jar $JAR_FILE"
-            
-            # 이전 로그 백업
-            if [ -f "app.log" ]; then
-                mv app.log "app.log.backup.$(date +%Y%m%d_%H%M%S)"
-                echo "이전 로그 파일 백업 완료"
-            fi
-            
-            # 애플리케이션 시작
-            nohup java -Xms512m -Xmx1024m -Dserver.port=$NEW_PORT -jar "$JAR_FILE" > app.log 2>&1 &
-            APP_PID=$!
-            echo "애플리케이션 PID: $APP_PID"
-            echo $APP_PID > app.pid
-            
-            # 6단계: 시작 확인
-            echo ""
-            echo "=== ✅ 6단계: 시작 확인 ==="
-            echo "10초 대기 중..."
-            sleep 10
-            
-            # 프로세스 확인
-            if kill -0 $APP_PID 2>/dev/null; then
-                echo "✅ 프로세스가 실행 중입니다 (PID: $APP_PID)"
-            else
-                echo "❌ 프로세스가 종료되었습니다"
-                echo "로그 확인:"
-                cat app.log
-                exit 1
-            fi
-            
-            # 포트 확인
-            echo "포트 $NEW_PORT 리스닝 확인:"
-            if netstat -tlnp 2>/dev/null | grep :$NEW_PORT; then
-                echo "✅ 포트 $NEW_PORT이 활성화되었습니다"
-            else
-                echo "⚠️ 포트 $NEW_PORT이 아직 활성화되지 않았습니다 (시작 중일 수 있음)"
-            fi
-            
-            # 애플리케이션 로그 확인
-            echo ""
-            echo "=== 📄 애플리케이션 로그 (최근 20줄) ==="
-            if [ -f "app.log" ]; then
-                tail -20 app.log
-            else
-                echo "❌ app.log 파일이 생성되지 않았습니다"
-            fi
-            
-            # 7단계: 최종 상태 요약
-            echo ""
-            echo "=== 📊 7단계: 배포 상태 요약 ==="
-            echo "배포 완료 시간: $(date)"
-            echo "실행 중인 Java 프로세스:"
-            pgrep -f "java.*jar" || echo "실행 중인 프로세스 없음"
-            echo "메모리 사용량:"
-            free -h | head -2
-            echo "디스크 사용량:"
-            df -h /home/ubuntu | tail -1
-            
-            # 접속 테스트
-            echo ""
-            echo "=== 🌐 8단계: 접속 테스트 ==="
-            echo "로컬호스트 접속 테스트:"
-            timeout 5 curl -s http://localhost:$NEW_PORT > /dev/null && echo "✅ localhost:$NEW_PORT 응답 정상" || echo "❌ localhost:$NEW_PORT 응답 없음"
-            
-            echo ""
-            echo "🎉 배포 스크립트 완료!"
-            echo "브라우저에서 http://$(curl -s ifconfig.me):$NEW_PORT 접속을 시도해보세요
+            echo "배포 완료: $(date)"
+            echo "로그 확인: tail -f /home/ubuntu/action/app.log"
