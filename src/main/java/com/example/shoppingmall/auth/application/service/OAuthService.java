@@ -22,17 +22,17 @@ import org.springframework.stereotype.Service;
 public class OAuthService {
 
   private final MemberRepository memberRepository;
-  private final OAuthClient githubOAuthClient;
+//  private final OAuthClient githubOAuthClient;
   private final OAuthClient googleOAuthClient;
   private final OAuthClient kakaoOauthClient;
   private final TokenProvider tokenProvider;
 
   public OAuthService(MemberRepository memberRepository,
-      @Qualifier("githubOAuthClient") OAuthClient githubOAuthClient,
+//      @Qualifier("githubOAuthClient") OAuthClient githubOAuthClient,
       @Qualifier("googleOAuthClient") OAuthClient googleOAuthClient,
       @Qualifier("kakaoOauthClient") OAuthClient kakaoOauthClient, TokenProvider tokenProvider) {
     this.memberRepository = memberRepository;
-    this.githubOAuthClient = githubOAuthClient;
+//    this.githubOAuthClient = githubOAuthClient;
     this.googleOAuthClient = googleOAuthClient;
     this.kakaoOauthClient = kakaoOauthClient;
     this.tokenProvider = tokenProvider;
@@ -81,7 +81,7 @@ public class OAuthService {
 
   private OAuthClient selectClient(String provider) {
     return switch (provider.toLowerCase()) {
-      case "github" -> githubOAuthClient;
+//      case "github" -> githubOAuthClient;
       case "google" -> googleOAuthClient;
       case "kakao" -> kakaoOauthClient;
       default -> throw new AuthorizationException(CustomErrorCode.INVALID_OAUTH_CLIENT);
