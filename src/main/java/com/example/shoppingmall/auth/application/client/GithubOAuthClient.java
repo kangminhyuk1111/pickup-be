@@ -13,7 +13,7 @@ import org.springframework.http.HttpHeaders;
 
 import java.util.Objects;
 
-//@Component
+@Component
 public class GithubOAuthClient implements OAuthClient {
 
   private static final String ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
