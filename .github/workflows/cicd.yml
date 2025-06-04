@@ -1,5 +1,6 @@
-name: Spring Boot 자동 빌드 및 배포 (디버깅 버전)
+name: Spring Boot 자동 빌드 및 배포
 
+# main, develop 브랜치 push시 스크립트 실행
 on:
   push:
     branches: [ "main", "develop" ]
@@ -41,58 +42,31 @@ jobs:
         with:
           cache-read-only: false
 
-      - name: 환경변수 파일 생성
-        run: |
-          cat > .env << EOF
-          # 데이터베이스 설정
-          DB_URL=${{ secrets.DB_URL }}
-          DB_USERNAME=${{ secrets.DB_USERNAME }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-
-          # JPA 설정
-          JPA_DDL_AUTO=${{ secrets.JPA_DDL_AUTO }}
-          JPA_SHOW_SQL=${{ secrets.JPA_SHOW_SQL }}
-          JPA_FORMAT_SQL=${{ secrets.JPA_FORMAT_SQL }}
-
-          # 템플릿 캐시 설정
-          THYMELEAF_CACHE=${{ secrets.THYMELEAF_CACHE }}
-
-          # 로깅 설정
-          LOG_LEVEL=${{ secrets.LOG_LEVEL }}
-          SPRING_JPA_SHOW_SQL=${{ secrets.SPRING_JPA_SHOW_SQL }}
-          HIBERNATE_LOG_LEVEL=${{ secrets.HIBERNATE_LOG_LEVEL }}
-          HIBERNATE_BINDING_LOG_LEVEL=${{ secrets.HIBERNATE_BINDING_LOG_LEVEL }}
-          LOGGING_LEVEL_ORG_HIBERNATE_SQL=${{ secrets.LOGGING_LEVEL_ORG_HIBERNATE_SQL }}
-          LOGGING_LEVEL_ORG_HIBERNATE_TYPE_DESCRIPTOR_SQL_BASICBINDER=${{ secrets.LOGGING_LEVEL_ORG_HIBERNATE_TYPE_DESCRIPTOR_SQL_BASICBINDER }}
-
-          # GitHub OAuth 설정 (OAUTH_ 접두사 유지)
-          OAUTH_GITHUB_CLIENT_ID=${{ secrets.OAUTH_GITHUB_CLIENT_ID }}
-          OAUTH_GITHUB_CLIENT_SECRET=${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}
-          OAUTH_GITHUB_REDIRECT_URI=${{ secrets.GITHUB_REDIRECT_URI }}
-
-          # Google OAuth 설정
-          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
-
-          # Kakao OAuth 설정
-          KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
-          KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
-          KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
-
-          # JWT 설정
-          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-          JWT_EXPIRE_LENGTH=${{ secrets.JWT_EXPIRE_LENGTH }}
-
-          # CORS 설정
-          CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
-
-          # 보안 설정
-          CSRF_ENABLED=${{ secrets.CSRF_ENABLED }}
-          EOF
-
       - name: 빌드 환경 변수 설정 및 JAR 파일 생성
         env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JPA_DDL_AUTO: ${{ secrets.JPA_DDL_AUTO }}
+          JPA_SHOW_SQL: ${{ secrets.JPA_SHOW_SQL }}
+          JPA_FORMAT_SQL: ${{ secrets.JPA_FORMAT_SQL }}
+          THYMELEAF_CACHE: ${{ secrets.THYMELEAF_CACHE }}
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+          HIBERNATE_LOG_LEVEL: ${{ secrets.HIBERNATE_LOG_LEVEL }}
+          HIBERNATE_BINDING_LOG_LEVEL: ${{ secrets.HIBERNATE_BINDING_LOG_LEVEL }}
+          OAUTH_GITHUB_CLIENT_ID: ${{ secrets.OAUTH_GITHUB_CLIENT_ID }}
+          OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}
+          OAUTH_GITHUB_REDIRECT_URI: ${{ secrets.OAUTH_GITHUB_REDIRECT_URI }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_EXPIRE_LENGTH: ${{ secrets.JWT_EXPIRE_LENGTH }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          CSRF_ENABLED: ${{ secrets.CSRF_ENABLED }}
           GRADLE_OPTS: -Xmx4g -XX:+UseParallelGC
         run: |
           ./gradlew build \
@@ -100,68 +74,45 @@ jobs:
             --parallel \
             --no-daemon
 
-      - name: 빌드된 JAR 파일 확인
-        run: |
-          echo "=== 빌드 완료 후 JAR 파일 확인 ==="
-          find build/libs -name "*.jar" -exec ls -la {} \;
-          echo "=== JAR 파일 상세 정보 ==="
-          for jar in build/libs/*.jar; do
-            echo "파일: $jar"
-            echo "크기: $(du -h "$jar" | cut -f1)"
-            echo "내용 확인:"
-            jar tf "$jar" | head -10
-            echo "---"
-          done
-
-      - name: EC2에 JAR 파일 및 환경변수 파일 업로드
-        uses: appleboy/scp-action@master
+      - name: EC2에 JAR 파일 업로드
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
+          username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "build/libs/shop-0.0.1-SNAPSHOT.jar,.env"
-          target: "/home/ubuntu/action/"
+          source: "build/libs/*.jar"
+          target: "/home/ubuntu/"
+          strip_components: 2
 
-      - name: EC2에서 애플리케이션 실행
-        uses: appleboy/ssh-action@master
+      - name: EC2에서 애플리케이션 배포
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
+          username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            # 8080 포트에서 실행 중인 기존 프로세스 종료
-            if lsof -i:8080 -t >/dev/null; then
-              echo "기존 프로세스 종료 중..."
-              kill -9 $(lsof -i:8080 -t)
-              sleep 3
-            fi
+            # 기존 프로세스 종료 (있다면)
+            sudo pkill -f 'java.*jar' || true
             
-            # 작업 디렉토리로 이동
-            cd /home/ubuntu/action
-            
-            # .env 파일이 있는지 확인
-            if [ -f .env ]; then
-              echo ".env 파일 확인됨"
-              echo "첫 5줄 내용:"
-              head -5 .env
-            else
-              echo "경고: .env 파일이 없습니다!"
-            fi
-            
-            # 새로운 애플리케이션 실행 (.env 파일의 환경변수 로드)
-            echo "새 애플리케이션 시작 중..."
-            export $(cat .env | grep -v '^#' | xargs)
-            nohup java -jar build/libs/shop-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
-            
-            echo "배포 완료: $(date)"
-            echo "로그 확인: tail -f /home/ubuntu/action/app.log"
-            
-            # 잠시 후 프로세스 확인
+            # 잠시 대기 (프로세스가 완전히 종료될 시간)
             sleep 5
-            if lsof -i:8080 -t >/dev/null; then
-              echo "✅ 애플리케이션이 성공적으로 시작되었습니다 (포트 8080)"
+            
+            # JAR 파일 실행 권한 부여
+            chmod +x /home/ubuntu/*.jar
+            
+            # 백그라운드에서 Spring Boot 애플리케이션 실행
+            nohup java -jar /home/ubuntu/*.jar > /home/ubuntu/app.log 2>&1 &
+            
+            # 애플리케이션이 정상 시작되었는지 확인
+            echo "애플리케이션 시작 대기 중..."
+            sleep 15
+            
+            if pgrep -f 'java.*jar'; then
+              echo "애플리케이션이 성공적으로 시작되었습니다."
+              echo "프로세스 ID: $(pgrep -f 'java.*jar')"
             else
-              echo "❌ 애플리케이션 시작 실패"
-              echo "최근 로그:"
-              tail -20 app.log
+              echo "애플리케이션 시작에 실패했습니다."
+              echo "로그 확인:"
+              tail -20 /home/ubuntu/app.log
+              exit 1
             fi
