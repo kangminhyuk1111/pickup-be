@@ -14,6 +14,7 @@ public class PropertyConfig {
       @PropertySource(value = "classpath:.env.local", ignoreResourceNotFound = true),
   })
   public static class LocalConfig {
+
   }
 
   @Configuration
@@ -22,5 +23,6 @@ public class PropertyConfig {
       @PropertySource(value = "classpath:.env.production", ignoreResourceNotFound = true),
   })
   public static class ProdConfig {
+
   }
 }
