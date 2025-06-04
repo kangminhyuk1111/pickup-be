@@ -92,47 +92,29 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu
-            
             echo "=== 배포 시작 ==="
-            
-            # Java 설치 확인
-            echo "Java 버전 확인:"
             java -version || echo "Java가 설치되지 않았습니다!"
-            
-            # 기존 Spring Boot 애플리케이션 종료
-            echo "기존 애플리케이션 종료 중..."
             pkill -f 'java -jar' || true
             sleep 5
-            
-            # 디렉토리 및 파일 확인
             echo "현재 디렉토리: $(pwd)"
             echo "모든 파일 목록:"
             ls -la
-            
-            # JAR 파일 확인
             echo "JAR 파일 확인:"
             if ls *.jar 1> /dev/null 2>&1; then
                 echo "JAR 파일 목록:"
                 ls -la *.jar
-            
                 JAR_FILE=$(ls -t *.jar | head -n1)
                 echo "시작할 애플리케이션: $JAR_FILE"
-            
-                # 백그라운드에서 애플리케이션 실행
                 echo "애플리케이션 시작 중..."
-                nohup java -jar $JAR_FILE > app.log 2>&1 &
-            
-                # 애플리케이션 시작 확인
+                nohup java -jar $JAR_FILE > app.log 2>&1 < /dev/null &
+                disown
                 sleep 5
                 echo "실행 중인 Java 프로세스:"
                 ps aux | grep java | grep -v grep || echo "실행 중인 Java 프로세스가 없습니다."
-            
                 echo "애플리케이션 로그 (최근 10줄):"
                 tail -10 app.log || echo "app.log 파일이 없습니다."
-            
             else
                 echo "ERROR: JAR 파일이 없습니다!"
                 echo "업로드가 실패했을 수 있습니다."
             fi
-            
             echo "=== 배포 완료: $(date) ==="
