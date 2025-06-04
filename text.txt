@@ -1,1 +1,18 @@
-txt
+# 1. 시스템 업데이트
+sudo apt update && sudo apt upgrade -y
+
+# 2. Java 17 설치
+sudo apt install openjdk-17-jre-headless -y
+
+# 3. MySQL 설치
+sudo apt install mysql-server -y
+
+# 4. MySQL 보안 설정
+sudo mysql_secure_installation
+
+# 5. MySQL 서비스 시작 및 자동 시작 설정
+sudo systemctl start mysql
+sudo systemctl enable mysql
+
+# 6. 데이터베이스 및 사용자 생성
+sudo mysql -u root -p
