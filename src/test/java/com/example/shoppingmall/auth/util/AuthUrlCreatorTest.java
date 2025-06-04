@@ -15,7 +15,7 @@ class AuthUrlCreatorTest {
 
   @BeforeEach
   void setUp() {
-    authUrlCreator = new AuthUrlCreator();
+    authUrlCreator = new AuthUrlCreator("http://localhost:8080/api/auth/oauth/callback");
   }
 
   @Test

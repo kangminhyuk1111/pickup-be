@@ -84,18 +84,3 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           source: "build/libs/shop-0.0.1-SNAPSHOT.jar"
           target: "/home/ubuntu/action/"
-
-      - name: EC2에서 JAR 실행
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            cd /home/ubuntu/action/build/libs
-            echo "🔁 기존 프로세스 종료 시도..."
-            pkill -f 'shop-0.0.1-SNAPSHOT.jar' || echo "기존 프로세스 없음 - 무시하고 계속"
-            echo "🚀 JAR 백그라운드 실행 (setsid)"
-            setsid nohup java -jar shop-0.0.1-SNAPSHOT.jar > /home/ubuntu/action/app.log 2>&1 < /dev/null &
-            echo $! > /home/ubuntu/action/app.pid
-            echo "✅ 실행 완료, PID 저장됨"
