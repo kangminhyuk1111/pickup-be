@@ -153,11 +153,29 @@ jobs:
             if [ -n "$EXISTING_JAVA_PROCESSES" ]; then
                 echo "기존 Java 프로세스 발견:"
                 echo "$EXISTING_JAVA_PROCESSES"
-                echo "프로세스 종료 시도..."
-                pkill -f "java.*jar" || echo "프로세스 종료 중 오류 발생 (무시)"
+                echo "프로세스 상세 정보:"
+                ps aux | grep "java.*jar" | grep -v grep || echo "상세 정보 없음"
+            
+                # 더 안전한 방법으로 프로세스 종료
+                echo "프로세스 개별 종료 시도..."
+                for pid in $EXISTING_JAVA_PROCESSES; do
+                    echo "PID $pid 종료 중..."
+                    kill -15 $pid 2>/dev/null || echo "PID $pid 종료 실패 (이미 종료되었을 수 있음)"
+                done
+            
                 sleep 5
                 echo "종료 후 프로세스 확인:"
-                pgrep -f "java.*jar" && echo "⚠️ 일부 프로세스가 여전히 실행 중" || echo "✅ 모든 프로세스 종료됨"
+                REMAINING_PROCESSES=$(pgrep -f "java.*jar" || echo "")
+                if [ -n "$REMAINING_PROCESSES" ]; then
+                    echo "⚠️ 일부 프로세스가 여전히 실행 중: $REMAINING_PROCESSES"
+                    echo "강제 종료 시도..."
+                    for pid in $REMAINING_PROCESSES; do
+                        kill -9 $pid 2>/dev/null || echo "PID $pid 강제 종료 실패"
+                    done
+                    sleep 2
+                else
+                    echo "✅ 모든 프로세스 종료됨"
+                fi
             else
                 echo "✅ 실행 중인 Java 프로세스 없음"
             fi
