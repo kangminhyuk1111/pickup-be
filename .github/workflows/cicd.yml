@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  스프링부트-빌드-및-배포:
+  spring-build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
