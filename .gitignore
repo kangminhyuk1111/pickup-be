@@ -6,6 +6,8 @@ build/
 # 환경 설정 파일 (보통 커밋하지 않음)
 src/main/resources/.env
 src/main/resources/.env.test
+src/main/resources/.env.local
+src/main/resources/.env.production
 
 # STS (Spring Tool Suite)
 .apt_generated/

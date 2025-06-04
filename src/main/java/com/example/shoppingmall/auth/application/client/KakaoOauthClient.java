@@ -17,19 +17,22 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class KakaoOauthClient implements OAuthClient {
 
+
   private static final String ACCESS_TOKEN_URL = "https://kauth.kakao.com/oauth/token";
   private static final String MEMBER_INFO_URL = "https://kapi.kakao.com/v2/user/me";
-  private static final String REDIRECT_URI = "http://localhost:8080/api/auth/oauth/callback/kakao";
 
   private final RestTemplate restTemplate;
   private final String clientId;
   private final String clientSecret;
+  private final String redirectUrl;
 
   public KakaoOauthClient(@Value("${kakao.client.id}") String clientId,
-      @Value("${kakao.client.secret}") String clientSecret) {
+      @Value("${kakao.client.secret}") String clientSecret,
+      @Value("${kakao.redirect.uri}") final String redirectUrl) {
     this.restTemplate = new RestTemplate();
     this.clientId = clientId;
     this.clientSecret = clientSecret;
+    this.redirectUrl = redirectUrl;
   }
 
   @Override
@@ -41,7 +44,7 @@ public class KakaoOauthClient implements OAuthClient {
     params.add("grant_type", "authorization_code");
     params.add("client_id", clientId);
     params.add("client_secret", clientSecret);
-    params.add("redirect_uri", REDIRECT_URI);
+    params.add("redirect_uri", redirectUrl);
     params.add("code", code);
 
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
