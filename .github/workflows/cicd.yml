@@ -94,7 +94,7 @@ jobs:
           script: |
             cd /home/ubuntu/action
             echo "🔁 기존 프로세스 종료 시도..."
-            pkill -f 'shop-0.0.1-SNAPSHOT.jar' || echo "기존 프로세스 없음"
+            pkill -f 'shop-0.0.1-SNAPSHOT.jar' || echo "기존 프로세스 없음 - 무시하고 계속"
             echo "🚀 JAR 백그라운드 실행"
             nohup java -jar shop-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
             echo $! > app.pid
