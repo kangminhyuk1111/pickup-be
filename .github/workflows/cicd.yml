@@ -146,38 +146,20 @@ jobs:
             echo "홈 디렉토리 권한:"
             ls -la /home/ubuntu | head -5
             
-            # 2단계: 기존 프로세스 확인 및 종료
+            # 2단계: 기존 프로세스 확인 (종료하지 않음)
             echo ""
-            echo "=== 🔄 2단계: 기존 프로세스 관리 ==="
+            echo "=== 🔄 2단계: 기존 프로세스 확인 ==="
             EXISTING_JAVA_PROCESSES=$(pgrep -f "java.*jar" || echo "")
             if [ -n "$EXISTING_JAVA_PROCESSES" ]; then
                 echo "기존 Java 프로세스 발견:"
                 echo "$EXISTING_JAVA_PROCESSES"
                 echo "프로세스 상세 정보:"
                 ps aux | grep "java.*jar" | grep -v grep || echo "상세 정보 없음"
-            
-                # 더 안전한 방법으로 프로세스 종료
-                echo "프로세스 개별 종료 시도..."
-                for pid in $EXISTING_JAVA_PROCESSES; do
-                    echo "PID $pid 종료 중..."
-                    kill -15 $pid 2>/dev/null || echo "PID $pid 종료 실패 (이미 종료되었을 수 있음)"
-                done
-            
-                sleep 5
-                echo "종료 후 프로세스 확인:"
-                REMAINING_PROCESSES=$(pgrep -f "java.*jar" || echo "")
-                if [ -n "$REMAINING_PROCESSES" ]; then
-                    echo "⚠️ 일부 프로세스가 여전히 실행 중: $REMAINING_PROCESSES"
-                    echo "강제 종료 시도..."
-                    for pid in $REMAINING_PROCESSES; do
-                        kill -9 $pid 2>/dev/null || echo "PID $pid 강제 종료 실패"
-                    done
-                    sleep 2
-                else
-                    echo "✅ 모든 프로세스 종료됨"
-                fi
+                echo "⚠️ 기존 프로세스는 유지하고 새 프로세스를 다른 포트로 시작합니다"
+                NEW_PORT=8081
             else
                 echo "✅ 실행 중인 Java 프로세스 없음"
+                NEW_PORT=8080
             fi
             
             # 3단계: 파일 시스템 확인
@@ -230,7 +212,7 @@ jobs:
             echo ""
             echo "=== 🚀 5단계: 애플리케이션 시작 ==="
             echo "시작 시간: $(date)"
-            echo "명령어: java -Xms512m -Xmx1024m -jar $JAR_FILE"
+            echo "명령어: java -Xms512m -Xmx1024m -Dserver.port=$NEW_PORT -jar $JAR_FILE"
             
             # 이전 로그 백업
             if [ -f "app.log" ]; then
@@ -239,7 +221,7 @@ jobs:
             fi
             
             # 애플리케이션 시작
-            nohup java -Xms512m -Xmx1024m -jar "$JAR_FILE" > app.log 2>&1 &
+            nohup java -Xms512m -Xmx1024m -Dserver.port=$NEW_PORT -jar "$JAR_FILE" > app.log 2>&1 &
             APP_PID=$!
             echo "애플리케이션 PID: $APP_PID"
             echo $APP_PID > app.pid
@@ -261,11 +243,11 @@ jobs:
             fi
             
             # 포트 확인
-            echo "포트 8080 리스닝 확인:"
-            if netstat -tlnp 2>/dev/null | grep :8080; then
-                echo "✅ 포트 8080이 활성화되었습니다"
+            echo "포트 $NEW_PORT 리스닝 확인:"
+            if netstat -tlnp 2>/dev/null | grep :$NEW_PORT; then
+                echo "✅ 포트 $NEW_PORT이 활성화되었습니다"
             else
-                echo "⚠️ 포트 8080이 아직 활성화되지 않았습니다 (시작 중일 수 있음)"
+                echo "⚠️ 포트 $NEW_PORT이 아직 활성화되지 않았습니다 (시작 중일 수 있음)"
             fi
             
             # 애플리케이션 로그 확인
@@ -292,8 +274,8 @@ jobs:
             echo ""
             echo "=== 🌐 8단계: 접속 테스트 ==="
             echo "로컬호스트 접속 테스트:"
-            timeout 5 curl -s http://localhost:8080 > /dev/null && echo "✅ localhost:8080 응답 정상" || echo "❌ localhost:8080 응답 없음"
+            timeout 5 curl -s http://localhost:$NEW_PORT > /dev/null && echo "✅ localhost:$NEW_PORT 응답 정상" || echo "❌ localhost:$NEW_PORT 응답 없음"
             
             echo ""
             echo "🎉 배포 스크립트 완료!"
-            echo "브라우저에서 http://$(curl -s ifconfig.me):8080 접속을 시도해보세요"
+            echo "브라우저에서 http://$(curl -s ifconfig.me):$NEW_PORT 접속을 시도해보세요
