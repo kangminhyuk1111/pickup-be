@@ -65,7 +65,7 @@ jobs:
           LOGGING_LEVEL_ORG_HIBERNATE_SQL=${{ secrets.LOGGING_LEVEL_ORG_HIBERNATE_SQL }}
           LOGGING_LEVEL_ORG_HIBERNATE_TYPE_DESCRIPTOR_SQL_BASICBINDER=${{ secrets.LOGGING_LEVEL_ORG_HIBERNATE_TYPE_DESCRIPTOR_SQL_BASICBINDER }}
 
-          # GitHub OAuth 설정 (OAUTH_ 접두사 제거하여 매핑)
+          # GitHub OAuth 설정 (OAUTH_ 접두사 유지)
           OAUTH_GITHUB_CLIENT_ID=${{ secrets.OAUTH_GITHUB_CLIENT_ID }}
           OAUTH_GITHUB_CLIENT_SECRET=${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}
           OAUTH_GITHUB_REDIRECT_URI=${{ secrets.GITHUB_REDIRECT_URI }}
@@ -148,8 +148,9 @@ jobs:
               echo "경고: .env 파일이 없습니다!"
             fi
             
-            # 새로운 애플리케이션 실행 (.env 파일과 함께)
+            # 새로운 애플리케이션 실행 (.env 파일의 환경변수 로드)
             echo "새 애플리케이션 시작 중..."
+            export $(cat .env | grep -v '^#' | xargs)
             nohup java -jar build/libs/shop-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
             
             echo "배포 완료: $(date)"
