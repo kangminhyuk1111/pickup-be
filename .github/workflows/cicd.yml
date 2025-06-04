@@ -100,8 +100,33 @@ jobs:
             # JAR 파일 실행 권한 부여
             chmod +x /home/ubuntu/*.jar
             
-            # 백그라운드에서 Spring Boot 애플리케이션 실행
-            nohup java -jar /home/ubuntu/*.jar > /home/ubuntu/app.log 2>&1 &
+            # 환경 변수 설정 및 백그라운드에서 Spring Boot 애플리케이션 실행
+            nohup java -jar \
+              -Dspring.datasource.url="${{ secrets.DB_URL }}" \
+              -Dspring.datasource.username="${{ secrets.DB_USERNAME }}" \
+              -Dspring.datasource.password="${{ secrets.DB_PASSWORD }}" \
+              -Dspring.jpa.hibernate.ddl-auto="${{ secrets.JPA_DDL_AUTO }}" \
+              -Dspring.jpa.show-sql="${{ secrets.JPA_SHOW_SQL }}" \
+              -Dspring.jpa.properties.hibernate.format_sql="${{ secrets.JPA_FORMAT_SQL }}" \
+              -Dspring.thymeleaf.cache="${{ secrets.THYMELEAF_CACHE }}" \
+              -Dlogging.level.root="${{ secrets.LOG_LEVEL }}" \
+              -Dlogging.level.org.hibernate="${{ secrets.HIBERNATE_LOG_LEVEL }}" \
+              -Dlogging.level.org.hibernate.type.descriptor.sql.BasicBinder="${{ secrets.HIBERNATE_BINDING_LOG_LEVEL }}" \
+              -Dspring.security.oauth2.client.registration.github.client-id="${{ secrets.OAUTH_GITHUB_CLIENT_ID }}" \
+              -Dspring.security.oauth2.client.registration.github.client-secret="${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}" \
+              -Dspring.security.oauth2.client.registration.github.redirect-uri="${{ secrets.OAUTH_GITHUB_REDIRECT_URI }}" \
+              -Dspring.security.oauth2.client.registration.google.client-id="${{ secrets.GOOGLE_CLIENT_ID }}" \
+              -Dspring.security.oauth2.client.registration.google.client-secret="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+              -Dspring.security.oauth2.client.registration.google.redirect-uri="${{ secrets.GOOGLE_REDIRECT_URI }}" \
+              -Dspring.security.oauth2.client.registration.kakao.client-id="${{ secrets.KAKAO_CLIENT_ID }}" \
+              -Dspring.security.oauth2.client.registration.kakao.client-secret="${{ secrets.KAKAO_CLIENT_SECRET }}" \
+              -Dspring.security.oauth2.client.registration.kakao.redirect-uri="${{ secrets.KAKAO_REDIRECT_URI }}" \
+              -Djwt.secret-key="${{ secrets.JWT_SECRET_KEY }}" \
+              -Djwt.expire-length="${{ secrets.JWT_EXPIRE_LENGTH }}" \
+              -Dcors.allowed-origins="${{ secrets.CORS_ALLOWED_ORIGINS }}" \
+              -Dcsrf.enabled="${{ secrets.CSRF_ENABLED }}" \
+              -Dspring.profiles.active=prod \
+              /home/ubuntu/*.jar > /home/ubuntu/app.log 2>&1 &
             
             # 애플리케이션이 정상 시작되었는지 확인
             echo "애플리케이션 시작 대기 중..."
