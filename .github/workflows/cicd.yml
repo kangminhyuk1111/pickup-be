@@ -17,15 +17,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Jdk 버전 설정
-      - name: Set up JDK 17
+      - name: JDK 17 버전 설치
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 🚀 핵심 추가: Gradle Cache 설정
-      - name: Cache Gradle packages
+      - name: Gradle Cache 설정
         uses: actions/cache@v4
         with:
           path: |
@@ -35,17 +33,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # gradle 접근 권한 설정
-      - name: Grant execute permission for gradlew
+      - name: Gradle 접근 권한 설정
         run: chmod +x gradlew
 
-      - name: Setup Gradle
+      - name: Gradle 세팅
         uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582
         with:
-          cache-read-only: false  # 캐시 쓰기 허용
+          cache-read-only: false
 
-      # 빌드 환경 변수 설정 - github actions secrets
-      - name: Build with Gradle Wrapper
+      - name: 빌드 환경 변수 설정
         env:
           DB_URL: ${{ secrets.DB_URL }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
@@ -77,7 +73,7 @@ jobs:
             --parallel \
             --no-daemon
           
-      - name: Upload JAR to EC2
+      - name: EC2에 JAR파일 업로드
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -87,7 +83,7 @@ jobs:
           target: "/home/ubuntu/"
           strip_components: 2
 
-      - name: Deploy on EC2
+      - name: EC2 빌드 배포
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
