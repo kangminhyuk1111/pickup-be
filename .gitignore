@@ -7,7 +7,7 @@ build/
 src/main/resources/.env
 src/main/resources/.env.test
 src/main/resources/.env.local
-src/main/resources/.env.production
+src/main/resources/.env.prod
 
 # STS (Spring Tool Suite)
 .apt_generated/
