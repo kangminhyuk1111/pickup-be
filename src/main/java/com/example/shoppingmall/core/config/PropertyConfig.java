@@ -10,25 +10,13 @@ public class PropertyConfig {
 
   @Configuration
   @Profile("local")
-  @PropertySources({
-      @PropertySource(value = "classpath:.env.local", ignoreResourceNotFound = true),
-  })
+  @PropertySource(value = "classpath:.env.local", ignoreResourceNotFound = true)
   public static class LocalConfig {
   }
 
   @Configuration
-  @Profile("test")
-  @PropertySources({
-      @PropertySource(value = "classpath:.env.test", ignoreResourceNotFound = true),
-  })
-  public static class TestConfig {
-  }
-
-  @Configuration
   @Profile("prod")
-  @PropertySources({
-      @PropertySource(value = "classpath:.env.prod", ignoreResourceNotFound = true),
-  })
+  @PropertySource(value = "classpath:.env.prod", ignoreResourceNotFound = true)
   public static class ProdConfig {
   }
 }
